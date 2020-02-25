@@ -8,6 +8,8 @@ export default class MainScene extends Phaser.Scene {
   ship1: Phaser.GameObjects.Sprite;
   ship2: Phaser.GameObjects.Sprite;
   ship3: Phaser.GameObjects.Sprite;
+  powerUps: Phaser.Physics.Arcade.Group;
+  player: Phaser.GameObjects.Sprite;
 
 
   constructor() {
@@ -25,36 +27,7 @@ export default class MainScene extends Phaser.Scene {
     this.ship2 = this.add.sprite(DEFAULT_WIDTH/2, DEFAULT_HEIGHT/2,"ship2");
     this.ship3 = this.add.sprite(DEFAULT_WIDTH/2+50, DEFAULT_HEIGHT/2,"ship3");
 
-    this.add.text(20,20,"PLAYING GAME", {font: "16px", fill:"yellow"});
-
-    this.anims.create({
-      key: "ship1_anim",
-      frames: this.anims.generateFrameNumbers("ship1",{start: 0, end: 3}),
-      frameRate: 20,
-      repeat: -1
-    });
-    
-    this.anims.create({
-      key: "ship2_anim",
-      frames: this.anims.generateFrameNumbers("ship2",{start: 0, end: 3}),
-      frameRate: 20,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "ship3_anim",
-      frames: this.anims.generateFrameNumbers("ship3",{start: 0, end: 3}),
-      frameRate: 20,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "explosion_anim",
-      frames: this.anims.generateFrameNumbers("explosion",{start: 0, end: 3}),
-      frameRate: 20,
-      repeat: 0,
-      hideOnComplete: true
-    });
+    this.add.text(20,20,"PLAYING GAME", {font: "16px", fill:"yellow"}); 
 
     this.ship1.play("ship1_anim");
     this.ship2.play("ship2_anim");
@@ -66,6 +39,26 @@ export default class MainScene extends Phaser.Scene {
 
     //change to this (whatever is clicked) and call destroyObj on it
     this.input.on("gameobjectdown", this.destroyObj, this);
+
+    this.powerUps = this.physics.add.group();
+    let maxObjects = 4;
+    for(let i = 0; i <= maxObjects; i++){
+      let powerUp = this.physics.add.sprite(16,16, "power-up");
+      this.powerUps.add(powerUp);
+      powerUp.setRandomPosition(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+      if (Math.random() > .5){
+        powerUp.play("red");
+      }else{
+        powerUp.play("gray");
+      }
+      powerUp.setVelocity(100,100);
+      powerUp.setCollideWorldBounds(true); //collide with game bounds
+      powerUp.setBounce(1);
+    }
+
+    this.player = this.physics.add.sprite(DEFAULT_WIDTH /2 -8, DEFAULT_HEIGHT -62, "player");
+    this.player.play("thrust");
+
 
   }
 
@@ -93,4 +86,5 @@ export default class MainScene extends Phaser.Scene {
     gameObject.setTexture("explosion");
     gameObject.play("explosion_anim");
   }
+
 }
