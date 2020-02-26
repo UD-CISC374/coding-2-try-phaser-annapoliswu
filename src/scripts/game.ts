@@ -10,7 +10,9 @@ export {DEFAULT_WIDTH};
 export {DEFAULT_HEIGHT};
 
 
-
+export let gameSettings ={
+    playerSpeed: 100
+}
 
 const config: GameConfig = {
     backgroundColor: '#000',
@@ -26,7 +28,7 @@ const config: GameConfig = {
         default: 'arcade',
         arcade: {
             debug: false,
-            gravity: { y: 400 }
+            //gravity: { y: 400 }
         }
     }
 };

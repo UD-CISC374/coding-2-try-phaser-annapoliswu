@@ -11,6 +11,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.spritesheet("explosion", "assets/spritesheets/explosion.png",{frameWidth: 16, frameHeight: 16});
     this.load.spritesheet("power-up", "assets/spritesheets/power-up.png",{frameWidth: 16, frameHeight: 16});
     this.load.spritesheet("player", "assets/spritesheets/player.png",{frameWidth: 16, frameHeight: 24});
+    this.load.spritesheet("beam", "assets/spritesheets/beam.png",{frameWidth: 16, frameHeight: 16});
   }
 
   create() {
@@ -66,6 +67,12 @@ export default class PreloadScene extends Phaser.Scene {
       repeat: -1
     });
 
+    this.anims.create({
+      key: "beam_anim",
+      frames: this.anims.generateFrameNumbers("beam",{}),
+      frameRate: 20,
+      repeat: -1
+    });
 
     this.scene.start('MainScene');
   }
