@@ -3,6 +3,7 @@ import {DEFAULT_HEIGHT} from '../game';
 import {DEFAULT_WIDTH} from '../game';
 import {gameSettings} from '../game';
 import Beam from '../objects/beam';
+import Explosion from '../objects/explosion';
 
 
 export default class MainScene extends Phaser.Scene {
@@ -20,6 +21,10 @@ export default class MainScene extends Phaser.Scene {
   scoreLabel: Phaser.GameObjects.BitmapText;
   text;
   score: number;
+  beamSound: Phaser.Sound.BaseSound;
+  explosionSound: Phaser.Sound.BaseSound;
+  pickupSound: Phaser.Sound.BaseSound;
+  music: Phaser.Sound.BaseSound;
 
   constructor() {
     super({ key: 'MainScene' });
@@ -35,9 +40,6 @@ export default class MainScene extends Phaser.Scene {
     this.ship1 = this.add.sprite(DEFAULT_WIDTH/2-50, DEFAULT_HEIGHT/2,"ship1");
     this.ship2 = this.add.sprite(DEFAULT_WIDTH/2, DEFAULT_HEIGHT/2,"ship2");
     this.ship3 = this.add.sprite(DEFAULT_WIDTH/2+50, DEFAULT_HEIGHT/2,"ship3");
-
-    //don't need bitmap, but might be faster with bm
-    this.text = this.add.text(20,20,"PLAYING GAME", {font: "16px", fill:"yellow"}); 
 
     this.ship1.play("ship1_anim");
     this.ship2.play("ship2_anim");
@@ -92,7 +94,31 @@ export default class MainScene extends Phaser.Scene {
     
     //this.scoreLabel = this.add.bitmapText(10,5,"Arial","SCORE",161);
     this.score = 0;
-  }
+    let graphic = this.add.graphics();
+    graphic.fillStyle(0o0,1);
+    graphic.fillRect(0,0,DEFAULT_WIDTH,20);
+
+    //don't need bitmap, but might be faster with bm
+    this.text = this.add.text(4,4,"PLAYING GAME", {font: "16px", fill:"yellow"}); 
+
+    this.beamSound = this.sound.add("audio_beam");
+    this.explosionSound = this.sound.add("audio_explosion");
+    this.pickupSound = this.sound.add("audio_pickup");
+
+    this.music = this.sound.add("music");
+
+    let musicConfig = {
+      mute: false,
+      volume: 1,
+      rate: 1,
+      detune: 0,
+      seek: 0,
+      loop: false,
+      delay: 0
+    }
+    this.music.play(musicConfig);
+
+  } //end of create
 
 
 
@@ -107,15 +133,20 @@ export default class MainScene extends Phaser.Scene {
 
     if(Phaser.Input.Keyboard.JustDown(this.spacebar)){
       console.log("shot");
-      this.shootBeam();
+      if(this.player.active){
+        this.shootBeam();
+      }
     }
 
     for(let i = 0; i < this.projectiles.getChildren().length; i++){
       let beam = this.projectiles.getChildren()[i];
       beam.update();
     }
+
     
-  }
+  } //end of update
+
+
 
   moveObj(obj, speed){
     obj.y += speed;
@@ -151,24 +182,67 @@ export default class MainScene extends Phaser.Scene {
 
   shootBeam(){
     this.projectiles.add(new Beam(this));
+    this.beamSound.play();
   }
 
   pickPowerUp(player,powerUp){
     powerUp.disableBody(true,true); //disables physics, makes inactive / hides
+    this.pickupSound.play();
   }
 
   hurtPlayer(player, enemy){
     this.resetObjPos(enemy);
+    if(this.player.alpha < 1){
+      return;
+    }
+    let explosion = new Explosion(this, player.x, player.y);
+    this.explosionSound.play();
+
     player.x = DEFAULT_WIDTH /2 -8;
     player.y = DEFAULT_HEIGHT - 64;
     player.setVelocity(0,0);
+
+    player.disableBody(true, true);
+    this.time.addEvent({
+      delay:1000,
+      callback: this.resetPlayer,
+      callbackScope: this,
+      loop: false
+    });
+
+    
+  }
+
+  resetPlayer(){
+    let x = DEFAULT_WIDTH / 2 -8;
+    let y = DEFAULT_HEIGHT + 64;
+    this.player.enableBody(true, x, y, true, true);
+    this.player.alpha = 0.5;
+
+    let tween = this.tweens.add({
+      targets: this.player,
+      y: DEFAULT_HEIGHT - 64,
+      ease: "Power1",
+      duration: 1500,
+      repeat: 0,
+      onComplete: this.resetPlayerAlpha,
+      callbackScope: this
+    });
+
   }
 
   hitEnemy(projectile, enemy){
     projectile.destroy();
+    let explosion = new Explosion(this, enemy.x, enemy.y);
+    this.explosionSound.play();
     this.resetObjPos(enemy);
     this.score += 15;
     this.text.setText('SCORE ' +  this.score);
+
+  }
+
+  resetPlayerAlpha(){
+    this.player.alpha = 1;
   }
     
-} //end of class
+} //end of scene

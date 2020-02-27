@@ -12,6 +12,13 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.spritesheet("power-up", "assets/spritesheets/power-up.png",{frameWidth: 16, frameHeight: 16});
     this.load.spritesheet("player", "assets/spritesheets/player.png",{frameWidth: 16, frameHeight: 24});
     this.load.spritesheet("beam", "assets/spritesheets/beam.png",{frameWidth: 16, frameHeight: 16});
+    
+    this.load.audio("audio_beam", ["assets/sounds/beam.ogg", "assets/sounds/beam.mp3"]);
+    this.load.audio("audio_explosion", ["assets/sounds/explosion.ogg", "assets/sounds/explosion.mp3"]);
+    this.load.audio("audio_pickup", ["assets/sounds/pickup.ogg", "assets/sounds/pickup.mp3"]);
+    this.load.audio("music", ["assets/sounds/sci-fi_platformer12.ogg", "assets/sounds/sci-fi_platformer12.mp3"]);
+
+  
   }
 
   create() {
