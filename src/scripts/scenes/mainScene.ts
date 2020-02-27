@@ -7,7 +7,8 @@ import Explosion from '../objects/explosion';
 import Enemy from '../objects/enemy';
 
 const playerStartX = 50;
-const playerStartY = 250;
+const playerStartY = 220;
+const enemyInterval = 200;
 
 export default class MainScene extends Phaser.Scene {
   private exampleObject: ExampleObject;
@@ -34,6 +35,8 @@ export default class MainScene extends Phaser.Scene {
   paraFar: Phaser.GameObjects.TileSprite;
   paraBg: Phaser.GameObjects.TileSprite;
   enemies: Phaser.GameObjects.Group;
+  enemyTimer: number;
+  ground: Phaser.GameObjects.Rectangle;
 
   constructor() {
     super({ key: 'MainScene' });
@@ -44,6 +47,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.cursorKeys = this.input.keyboard.createCursorKeys();
+    this.enemyTimer = 0;
 
     //background
     this.paraBg = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraBg");
@@ -55,6 +59,9 @@ export default class MainScene extends Phaser.Scene {
     this.paraClose = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraClose");
     this.paraClose.setOrigin(0,0);
   
+    
+    this.ground = this.add.rectangle(DEFAULT_WIDTH/2, DEFAULT_HEIGHT, DEFAULT_WIDTH, DEFAULT_HEIGHT-playerStartY, 0xff6699);
+    this.physics.add.existing(this.ground, true); //true is static
 
     this.player = this.physics.add.sprite(playerStartX, playerStartY, "player");
     this.player.play("thrust");
@@ -89,11 +96,10 @@ export default class MainScene extends Phaser.Scene {
     
     //gravity auto applied to physics groups?
     this.enemies = this.add.group();
-    let enemy1 = new Enemy(this, 200, 300);
-    this.enemies.add(new Enemy(this, 200, 200));
-    this.enemies.add(new Enemy(this, 300, 200));
-    this.enemies.add(new Enemy(this, 400, 200));
+    //let enemy1 = new Enemy(this, 200, 300);
+    //this.enemies.add(new Enemy(this, 400, 200));
     
+    this.physics.add.collider(this.ground,this.player);
 
     this.physics.add.collider(this.projectiles, this.powerUps, 
       function(projectile, powerUp){
@@ -139,6 +145,11 @@ export default class MainScene extends Phaser.Scene {
     this.paraFar.tilePositionX += 0.6;
     this.paraMid.tilePositionX += 0.4;
     this.paraClose.tilePositionX += 0.2
+
+    //let enemy = new Enemy(this, 400, 200);
+    //this.enemies.add(enemy);
+
+    this.enemyGenerationManager();
 
     for(let i = 0; i < this.enemies.getChildren().length; i++){
       let enemy = this.enemies.getChildren()[i];
@@ -191,11 +202,14 @@ export default class MainScene extends Phaser.Scene {
     }
     */
 
-    if(this.cursorKeys.up.isDown){
+    if(this.cursorKeys.up.isDown && this.player.body.onFloor()){
       this.player.setVelocityY(-1*gameSettings.playerSpeed);
     }else if(this.cursorKeys.down.isDown){
       this.player.setVelocityY(gameSettings.playerSpeed);
     }
+
+
+
   }
 
   shootBeam(){
@@ -210,7 +224,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   hurtPlayer(player, enemy){
-    this.resetObjPos(enemy);
+    enemy.destroy();
     if(this.player.alpha < 1){
       return;
     }
@@ -254,7 +268,7 @@ export default class MainScene extends Phaser.Scene {
     projectile.destroy();
     let explosion = new Explosion(this, enemy.x, enemy.y);
     this.explosionSound.play();
-    this.resetObjPos(enemy);
+    enemy.destroy();
     this.score += 15;
     this.text.setText('SCORE ' +  this.score);
 
@@ -262,6 +276,18 @@ export default class MainScene extends Phaser.Scene {
 
   resetPlayerAlpha(){
     this.player.alpha = 1;
+  }
+
+  enemyGenerationManager(){
+    
+    if(this.enemyTimer <= 0){
+      this.enemyTimer = enemyInterval;
+      let enemy = new Enemy(this, DEFAULT_WIDTH, playerStartY);
+      this.enemies.add(enemy);
+    }else{
+      this.enemyTimer--;
+    }
+  
   }
     
 } //end of scene

@@ -5,10 +5,10 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         
         super(scene, x, y, "enemy");
         scene.add.existing(this);
-        this.play("ship1_anim");
+        let skeleton = this.play("skeleton_walk");
         scene.physics.world.enableBody(this);
         this.body.setAllowGravity(false);
-        this.body.velocity.x = -100;
+        this.body.velocity.x = -40;
         
     }
 

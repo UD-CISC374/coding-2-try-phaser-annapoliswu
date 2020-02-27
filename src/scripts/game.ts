@@ -11,7 +11,7 @@ export {DEFAULT_HEIGHT};
 
 
 export let gameSettings ={
-    playerSpeed: 100
+    playerSpeed: 200
 }
 
 const config: GameConfig = {
