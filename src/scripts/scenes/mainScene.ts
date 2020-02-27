@@ -25,6 +25,10 @@ export default class MainScene extends Phaser.Scene {
   explosionSound: Phaser.Sound.BaseSound;
   pickupSound: Phaser.Sound.BaseSound;
   music: Phaser.Sound.BaseSound;
+  paraMid: Phaser.GameObjects.TileSprite;
+  paraClose: Phaser.GameObjects.TileSprite;
+  paraFar: Phaser.GameObjects.TileSprite;
+  paraBg: Phaser.GameObjects.TileSprite;
 
   constructor() {
     super({ key: 'MainScene' });
@@ -32,10 +36,21 @@ export default class MainScene extends Phaser.Scene {
 
 
   create() {
-    this.exampleObject = new ExampleObject(this, 0, 0);
 
-    this.background = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "background");
-    this.background.setOrigin(0,0);
+    this.paraBg = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraBg");
+    this.paraBg.setOrigin(0,0);
+
+    this.paraFar = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraFar");
+    this.paraFar.setOrigin(0,0);
+
+    this.paraMid = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraMid");
+    this.paraMid.setOrigin(0,0);
+
+    this.paraClose = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraClose");
+    this.paraClose.setOrigin(0,0);
+  
+
+
 
     this.ship1 = this.add.sprite(DEFAULT_WIDTH/2-50, DEFAULT_HEIGHT/2,"ship1");
     this.ship2 = this.add.sprite(DEFAULT_WIDTH/2, DEFAULT_HEIGHT/2,"ship2");
@@ -118,6 +133,7 @@ export default class MainScene extends Phaser.Scene {
     }
     this.music.play(musicConfig);
 
+
   } //end of create
 
 
@@ -125,10 +141,16 @@ export default class MainScene extends Phaser.Scene {
 
 
   update() {
+    this.paraFar.tilePositionX += 0.6;
+    this.paraMid.tilePositionX += 0.4;
+    this.paraClose.tilePositionX += 0.2
+
     this.moveObj(this.ship1,1);
     this.moveObj(this.ship2,2);
     this.moveObj(this.ship3,3);
-    this.background.tilePositionY -= 0.5;
+
+ 
+
     this.movePlayerManager();
 
     if(Phaser.Input.Keyboard.JustDown(this.spacebar)){

@@ -5,6 +5,12 @@ export default class PreloadScene extends Phaser.Scene {
 
   preload() {
     this.load.image("background", "assets/background.png");
+    this.load.image("paraBg", "assets/parallax-bg.png");
+    this.load.image("paraFar", "assets/parallax-far-trees.png");
+    this.load.image("paraMid", "assets/parallax-mid-trees.png");
+    this.load.image("paraClose", "assets/parallax-close-trees.png");
+    
+
     this.load.spritesheet("ship1", "assets/spritesheets/ship1.png",{frameWidth: 16, frameHeight: 16});
     this.load.spritesheet("ship2", "assets/spritesheets/ship2.png",{frameWidth: 32, frameHeight: 16});
     this.load.spritesheet("ship3", "assets/spritesheets/ship3.png",{frameWidth: 32, frameHeight: 32});
@@ -81,6 +87,8 @@ export default class PreloadScene extends Phaser.Scene {
       repeat: -1
     });
 
+
     this.scene.start('MainScene');
   }
+
 }
