@@ -4,7 +4,10 @@ import {DEFAULT_WIDTH} from '../game';
 import {gameSettings} from '../game';
 import Beam from '../objects/beam';
 import Explosion from '../objects/explosion';
+import Enemy from '../objects/enemy';
 
+const playerStartX = 50;
+const playerStartY = 250;
 
 export default class MainScene extends Phaser.Scene {
   private exampleObject: ExampleObject;
@@ -17,9 +20,10 @@ export default class MainScene extends Phaser.Scene {
   cursorKeys;
   spacebar: Phaser.Input.Keyboard.Key;
   projectiles: Phaser.GameObjects.Group;
-  enemies: Phaser.Physics.Arcade.Group;
+  
   scoreLabel: Phaser.GameObjects.BitmapText;
   text;
+
   score: number;
   beamSound: Phaser.Sound.BaseSound;
   explosionSound: Phaser.Sound.BaseSound;
@@ -29,6 +33,7 @@ export default class MainScene extends Phaser.Scene {
   paraClose: Phaser.GameObjects.TileSprite;
   paraFar: Phaser.GameObjects.TileSprite;
   paraBg: Phaser.GameObjects.TileSprite;
+  enemies: Phaser.GameObjects.Group;
 
   constructor() {
     super({ key: 'MainScene' });
@@ -37,32 +42,26 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
 
+    this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.cursorKeys = this.input.keyboard.createCursorKeys();
+
+    //background
     this.paraBg = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraBg");
     this.paraBg.setOrigin(0,0);
-
     this.paraFar = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraFar");
     this.paraFar.setOrigin(0,0);
-
     this.paraMid = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraMid");
     this.paraMid.setOrigin(0,0);
-
     this.paraClose = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraClose");
     this.paraClose.setOrigin(0,0);
   
 
+    this.player = this.physics.add.sprite(playerStartX, playerStartY, "player");
+    this.player.play("thrust");
+    this.player.setCollideWorldBounds(true);
+    this.player.body.bounce.y = 0.3;
+   //this.player.body.setAllowGravity(false);
 
-
-    this.ship1 = this.add.sprite(DEFAULT_WIDTH/2-50, DEFAULT_HEIGHT/2,"ship1");
-    this.ship2 = this.add.sprite(DEFAULT_WIDTH/2, DEFAULT_HEIGHT/2,"ship2");
-    this.ship3 = this.add.sprite(DEFAULT_WIDTH/2+50, DEFAULT_HEIGHT/2,"ship3");
-
-    this.ship1.play("ship1_anim");
-    this.ship2.play("ship2_anim");
-    this.ship3.play("ship3_anim");
-
-    this.ship1.setInteractive();
-    this.ship2.setInteractive();
-    this.ship3.setInteractive();
 
     //change to this (whatever is clicked) and call destroyObj on it
     this.input.on("gameobjectdown", this.destroyObj, this);
@@ -84,36 +83,32 @@ export default class MainScene extends Phaser.Scene {
     }
   
 
-    this.player = this.physics.add.sprite(DEFAULT_WIDTH /2 -8, DEFAULT_HEIGHT -64, "player");
-    this.player.play("thrust");
-    this.player.body.setAllowGravity(false);
 
-    this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.cursorKeys = this.input.keyboard.createCursorKeys();
-    this.player.setCollideWorldBounds(true);
+    this.projectiles = this.add.group(); 
 
-    this.projectiles = this.add.group();
+    
+    //gravity auto applied to physics groups?
+    this.enemies = this.add.group();
+    let enemy1 = new Enemy(this, 200, 300);
+    this.enemies.add(new Enemy(this, 200, 200));
+    this.enemies.add(new Enemy(this, 300, 200));
+    this.enemies.add(new Enemy(this, 400, 200));
+    
 
-    this.physics.add.collider(this.projectiles, this.powerUps, function(projectile, powerUp){
-      projectile.destroy();
+    this.physics.add.collider(this.projectiles, this.powerUps, 
+      function(projectile, powerUp){
+        projectile.destroy();
     });
     this.physics.add.overlap(this.player,this.powerUps,this.pickPowerUp, function(){}, this);
-
-    this.enemies = this.physics.add.group();
-    this.enemies.add(this.ship1);
-    this.enemies.add(this.ship2);
-    this.enemies.add(this.ship3);
-    
     this.physics.add.overlap(this.player,this.enemies,this.hurtPlayer, function(){}, this);
     this.physics.add.overlap(this.projectiles,this.enemies,this.hitEnemy, function(){}, this);
     
-    //this.scoreLabel = this.add.bitmapText(10,5,"Arial","SCORE",161);
+
     this.score = 0;
     let graphic = this.add.graphics();
     graphic.fillStyle(0o0,1);
     graphic.fillRect(0,0,DEFAULT_WIDTH,20);
 
-    //don't need bitmap, but might be faster with bm
     this.text = this.add.text(4,4,"PLAYING GAME", {font: "16px", fill:"yellow"}); 
 
     this.beamSound = this.sound.add("audio_beam");
@@ -145,11 +140,10 @@ export default class MainScene extends Phaser.Scene {
     this.paraMid.tilePositionX += 0.4;
     this.paraClose.tilePositionX += 0.2
 
-    this.moveObj(this.ship1,1);
-    this.moveObj(this.ship2,2);
-    this.moveObj(this.ship3,3);
-
- 
+    for(let i = 0; i < this.enemies.getChildren().length; i++){
+      let enemy = this.enemies.getChildren()[i];
+      enemy.update();
+    }
 
     this.movePlayerManager();
 
@@ -171,16 +165,16 @@ export default class MainScene extends Phaser.Scene {
 
 
   moveObj(obj, speed){
-    obj.y += speed;
-    if(obj.y > DEFAULT_HEIGHT){
+    obj.x -= speed;
+    if(obj.x < 0){
       this.resetObjPos(obj);
     }
   }
 
   resetObjPos(obj){
-    obj.y = 0;
-    let randomX = Phaser.Math.Between(0, DEFAULT_WIDTH);
-    obj.x = randomX;
+    obj.x = DEFAULT_WIDTH;
+    let randomY = Phaser.Math.Between(0, DEFAULT_WIDTH);
+    obj.y = randomY;
   }
 
   destroyObj(pointer, gameObject){
@@ -189,11 +183,13 @@ export default class MainScene extends Phaser.Scene {
   }
 
   movePlayerManager(){
+    /*
     if(this.cursorKeys.left.isDown){
       this.player.setVelocityX(-1*gameSettings.playerSpeed);
     }else if(this.cursorKeys.right.isDown){
       this.player.setVelocityX(gameSettings.playerSpeed);
     }
+    */
 
     if(this.cursorKeys.up.isDown){
       this.player.setVelocityY(-1*gameSettings.playerSpeed);
@@ -203,7 +199,8 @@ export default class MainScene extends Phaser.Scene {
   }
 
   shootBeam(){
-    this.projectiles.add(new Beam(this));
+    let beam = new Beam(this);
+    this.projectiles.add(beam);
     this.beamSound.play();
   }
 
@@ -220,8 +217,8 @@ export default class MainScene extends Phaser.Scene {
     let explosion = new Explosion(this, player.x, player.y);
     this.explosionSound.play();
 
-    player.x = DEFAULT_WIDTH /2 -8;
-    player.y = DEFAULT_HEIGHT - 64;
+    player.x = playerStartX;
+    player.y = playerStartY;
     player.setVelocity(0,0);
 
     player.disableBody(true, true);
@@ -236,14 +233,14 @@ export default class MainScene extends Phaser.Scene {
   }
 
   resetPlayer(){
-    let x = DEFAULT_WIDTH / 2 -8;
-    let y = DEFAULT_HEIGHT + 64;
+    let x = 0;
+    let y = playerStartY;
     this.player.enableBody(true, x, y, true, true);
     this.player.alpha = 0.5;
 
     let tween = this.tweens.add({
       targets: this.player,
-      y: DEFAULT_HEIGHT - 64,
+      x: playerStartX,
       ease: "Power1",
       duration: 1500,
       repeat: 0,
