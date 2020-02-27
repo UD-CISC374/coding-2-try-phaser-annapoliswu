@@ -5,6 +5,8 @@ import {gameSettings} from '../game';
 import Beam from '../objects/beam';
 import Explosion from '../objects/explosion';
 import Enemy from '../objects/enemy';
+import SmallMon from '../objects/smallmon';
+import Skeleton from '../objects/skeleton';
 
 const playerStartX = 50;
 const playerStartY = 220;
@@ -100,6 +102,7 @@ export default class MainScene extends Phaser.Scene {
     //this.enemies.add(new Enemy(this, 400, 200));
     
     this.physics.add.collider(this.ground,this.player);
+    this.physics.add.collider(this.ground,this.enemies);
 
     this.physics.add.collider(this.projectiles, this.powerUps, 
       function(projectile, powerUp){
@@ -279,14 +282,20 @@ export default class MainScene extends Phaser.Scene {
   }
 
   enemyGenerationManager(){
-    
+    let rand = Math.random();
+    let enemy; 
     if(this.enemyTimer <= 0){
-      this.enemyTimer = enemyInterval;
-      let enemy = new Enemy(this, DEFAULT_WIDTH, playerStartY);
+      this.enemyTimer = enemyInterval;  
+      if(rand <= .5){
+        enemy = new SmallMon(this, DEFAULT_WIDTH, playerStartY); 
+      }else{
+        enemy = new Skeleton(this, DEFAULT_WIDTH, playerStartY);
+      }
       this.enemies.add(enemy);
     }else{
       this.enemyTimer--;
     }
+    
   
   }
     

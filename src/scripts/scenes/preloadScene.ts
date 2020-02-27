@@ -20,7 +20,8 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.spritesheet("beam", "assets/spritesheets/beam.png",{frameWidth: 16, frameHeight: 16});
 
     this.load.spritesheet("skeleton", "assets/spritesheets/Skeleton Walk.png",{frameWidth: 44, frameHeight: 66});
-    
+    this.load.spritesheet("smallmon", "assets/spritesheets/smallMonster.png",{frameWidth: 64, frameHeight: 64});
+
     this.load.audio("audio_beam", ["assets/sounds/beam.ogg", "assets/sounds/beam.mp3"]);
     this.load.audio("audio_explosion", ["assets/sounds/explosion.ogg", "assets/sounds/explosion.mp3"]);
     this.load.audio("audio_pickup", ["assets/sounds/pickup.ogg", "assets/sounds/pickup.mp3"]);
@@ -31,7 +32,21 @@ export default class PreloadScene extends Phaser.Scene {
 
   create() {
     this.add.text(20,20,"LOADING GAME...");
+  
+    this.anims.create({
+      key: "smallmon_jump",
+      frames: this.anims.generateFrameNumbers("smallmon",{start: 18, end:24}),
+      frameRate: 20,
+      repeat: -1
+    });
 
+    this.anims.create({
+      key: "smallmon_walk",
+      frames: this.anims.generateFrameNumbers("smallmon",{start: 12, end:15}),
+      frameRate: 20,
+      repeat: -1
+    });
+    
     
     this.anims.create({
       key: "skeleton_walk",
