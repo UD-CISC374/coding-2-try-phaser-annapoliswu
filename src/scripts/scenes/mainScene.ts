@@ -102,7 +102,7 @@ export default class MainScene extends Phaser.Scene {
     graphic.fillStyle(0x3B2634,1);
     graphic.fillRect(0,0,DEFAULT_WIDTH,30);
 
-    this.text = this.add.text(10,8,"PLAYING GAME", {font: "16px"}); 
+    this.text = this.add.text(10,8,"PRESS SPACEBAR TO SHOOT AND UP TO JUMP", {font: "16px"}); 
 
     this.beamSound = this.sound.add("audio_beam");
     this.explosionSound = this.sound.add("audio_explosion");
@@ -253,7 +253,7 @@ export default class MainScene extends Phaser.Scene {
 
     if(enemy.lives == 1){
       enemy.destroy();
-      gameSettings.score += gameSettings.score;
+      gameSettings.score += enemy.score;
     }else{
       enemy.lives--;
     }
