@@ -7,10 +7,12 @@ import Explosion from '../objects/explosion';
 import Enemy from '../objects/enemy';
 import SmallMon from '../objects/smallmon';
 import Skeleton from '../objects/skeleton';
+import EndScene from './endScene';
 
 const playerStartX = 50;
-const playerStartY = 220;
-const enemyInterval = 200;
+const playerStartY = 120;
+const enemyInterval = 150;
+const powerUpInterval = 300;
 
 export default class MainScene extends Phaser.Scene {
   private exampleObject: ExampleObject;
@@ -38,6 +40,7 @@ export default class MainScene extends Phaser.Scene {
   paraBg: Phaser.GameObjects.TileSprite;
   enemies: Phaser.GameObjects.Group;
   enemyTimer: number;
+  powerUpTimer: number;
   ground: Phaser.GameObjects.Rectangle;
 
   constructor() {
@@ -50,6 +53,7 @@ export default class MainScene extends Phaser.Scene {
     this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.cursorKeys = this.input.keyboard.createCursorKeys();
     this.enemyTimer = 0;
+    this.powerUpTimer = 0;
 
     //background
     this.paraBg = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraBg");
@@ -62,11 +66,12 @@ export default class MainScene extends Phaser.Scene {
     this.paraClose.setOrigin(0,0);
   
     
-    this.ground = this.add.rectangle(DEFAULT_WIDTH/2, DEFAULT_HEIGHT, DEFAULT_WIDTH, DEFAULT_HEIGHT-playerStartY, 0xff6699);
+    this.ground = this.add.rectangle(DEFAULT_WIDTH/2, DEFAULT_HEIGHT, DEFAULT_WIDTH, DEFAULT_HEIGHT-200, 0x3B2634);
     this.physics.add.existing(this.ground, true); //true is static
 
     this.player = this.physics.add.sprite(playerStartX, playerStartY, "player");
-    this.player.play("thrust");
+    this.player.body.setSize(64,44);
+    this.player.play("char_walk");
     this.player.setCollideWorldBounds(true);
     this.player.body.bounce.y = 0.3;
    //this.player.body.setAllowGravity(false);
@@ -76,33 +81,12 @@ export default class MainScene extends Phaser.Scene {
     this.input.on("gameobjectdown", this.destroyObj, this);
 
     this.powerUps = this.physics.add.group();
-    let maxObjects = 4;
-    for(let i = 0; i <= maxObjects; i++){
-      let powerUp = this.physics.add.sprite(16,16, "power-up");
-      this.powerUps.add(powerUp);
-      powerUp.setRandomPosition(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-      if (Math.random() > .5){
-        powerUp.play("red");
-      }else{
-        powerUp.play("gray");
-      }
-      powerUp.setVelocity(100,100);
-      powerUp.setCollideWorldBounds(true); //collide with game bounds
-      powerUp.setBounce(1);
-    }
-  
-
-
     this.projectiles = this.add.group(); 
-
-    
-    //gravity auto applied to physics groups?
     this.enemies = this.add.group();
-    //let enemy1 = new Enemy(this, 200, 300);
-    //this.enemies.add(new Enemy(this, 400, 200));
     
     this.physics.add.collider(this.ground,this.player);
     this.physics.add.collider(this.ground,this.enemies);
+    this.physics.add.collider(this.ground, this.powerUps);
 
     this.physics.add.collider(this.projectiles, this.powerUps, 
       function(projectile, powerUp){
@@ -113,12 +97,12 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.overlap(this.projectiles,this.enemies,this.hitEnemy, function(){}, this);
     
 
-    this.score = 0;
+    //this.score = 0;
     let graphic = this.add.graphics();
-    graphic.fillStyle(0o0,1);
-    graphic.fillRect(0,0,DEFAULT_WIDTH,20);
+    graphic.fillStyle(0x3B2634,1);
+    graphic.fillRect(0,0,DEFAULT_WIDTH,30);
 
-    this.text = this.add.text(4,4,"PLAYING GAME", {font: "16px", fill:"yellow"}); 
+    this.text = this.add.text(10,8,"PLAYING GAME", {font: "16px"}); 
 
     this.beamSound = this.sound.add("audio_beam");
     this.explosionSound = this.sound.add("audio_explosion");
@@ -143,26 +127,21 @@ export default class MainScene extends Phaser.Scene {
 
 
 
-
   update() {
     this.paraFar.tilePositionX += 0.6;
     this.paraMid.tilePositionX += 0.4;
     this.paraClose.tilePositionX += 0.2
 
-    //let enemy = new Enemy(this, 400, 200);
-    //this.enemies.add(enemy);
-
     this.enemyGenerationManager();
+    this.powerUpGenerationManager();
+    this.movePlayerManager();
 
     for(let i = 0; i < this.enemies.getChildren().length; i++){
       let enemy = this.enemies.getChildren()[i];
       enemy.update();
     }
 
-    this.movePlayerManager();
-
     if(Phaser.Input.Keyboard.JustDown(this.spacebar)){
-      console.log("shot");
       if(this.player.active){
         this.shootBeam();
       }
@@ -172,10 +151,8 @@ export default class MainScene extends Phaser.Scene {
       let beam = this.projectiles.getChildren()[i];
       beam.update();
     }
-
     
   } //end of update
-
 
 
   moveObj(obj, speed){
@@ -210,9 +187,6 @@ export default class MainScene extends Phaser.Scene {
     }else if(this.cursorKeys.down.isDown){
       this.player.setVelocityY(gameSettings.playerSpeed);
     }
-
-
-
   }
 
   shootBeam(){
@@ -222,11 +196,14 @@ export default class MainScene extends Phaser.Scene {
   }
 
   pickPowerUp(player,powerUp){
-    powerUp.disableBody(true,true); //disables physics, makes inactive / hides
+    powerUp.destroy();
+    gameSettings.score= gameSettings.score + 10;
+    this.text.setText('SCORE ' +  gameSettings.score);
     this.pickupSound.play();
   }
 
   hurtPlayer(player, enemy){
+
     enemy.destroy();
     if(this.player.alpha < 1){
       return;
@@ -246,6 +223,7 @@ export default class MainScene extends Phaser.Scene {
       loop: false
     });
 
+    this.scene.start("EndScene");
     
   }
 
@@ -265,15 +243,22 @@ export default class MainScene extends Phaser.Scene {
       callbackScope: this
     });
 
+
   }
 
   hitEnemy(projectile, enemy){
     projectile.destroy();
     let explosion = new Explosion(this, enemy.x, enemy.y);
     this.explosionSound.play();
-    enemy.destroy();
-    this.score += 15;
-    this.text.setText('SCORE ' +  this.score);
+
+    if(enemy.lives == 1){
+      enemy.destroy();
+      gameSettings.score += gameSettings.score;
+    }else{
+      enemy.lives--;
+    }
+    
+    this.text.setText('SCORE ' +  gameSettings.score);
 
   }
 
@@ -286,7 +271,7 @@ export default class MainScene extends Phaser.Scene {
     let enemy; 
     if(this.enemyTimer <= 0){
       this.enemyTimer = enemyInterval;  
-      if(rand <= .5){
+      if(rand <= .7){
         enemy = new SmallMon(this, DEFAULT_WIDTH, playerStartY); 
       }else{
         enemy = new Skeleton(this, DEFAULT_WIDTH, playerStartY);
@@ -295,8 +280,26 @@ export default class MainScene extends Phaser.Scene {
     }else{
       this.enemyTimer--;
     }
-    
-  
   }
+
+  powerUpGenerationManager(){
+    if(this.powerUpTimer <= 0){
+      this.powerUpTimer = powerUpInterval;
+      let powerUp = this.physics.add.sprite(16,16, "power-up");
+      this.powerUps.add(powerUp);
+      powerUp.setRandomPosition(0, 0, DEFAULT_WIDTH, 0);
+      if (Math.random() > .5){
+        powerUp.play("red");
+      }else{
+        powerUp.play("gray");
+      }
+      powerUp.setVelocity(150,150);  
+      powerUp.setCollideWorldBounds(true); //collide with game bounds
+      powerUp.setBounce(1);
+    }else{
+      this.powerUpTimer--;
+    }
+  }
+  
     
 } //end of scene

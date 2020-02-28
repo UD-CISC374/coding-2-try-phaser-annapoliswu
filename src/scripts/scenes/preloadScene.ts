@@ -18,6 +18,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.spritesheet("power-up", "assets/spritesheets/power-up.png",{frameWidth: 16, frameHeight: 16});
     this.load.spritesheet("player", "assets/spritesheets/player.png",{frameWidth: 16, frameHeight: 24});
     this.load.spritesheet("beam", "assets/spritesheets/beam.png",{frameWidth: 16, frameHeight: 16});
+    this.load.spritesheet("char", "assets/spritesheets/char.png",{frameWidth: 64, frameHeight: 44});
 
     this.load.spritesheet("skeleton", "assets/spritesheets/Skeleton Walk.png",{frameWidth: 44, frameHeight: 66});
     this.load.spritesheet("smallmon", "assets/spritesheets/smallMonster.png",{frameWidth: 64, frameHeight: 64});
@@ -33,6 +34,14 @@ export default class PreloadScene extends Phaser.Scene {
   create() {
     this.add.text(20,20,"LOADING GAME...");
   
+    this.anims.create({
+      key: "char_walk",
+      frames: this.anims.generateFrameNumbers("char",{}),
+      frameRate: 20,
+      repeat: -1
+    });
+
+
     this.anims.create({
       key: "smallmon_jump",
       frames: this.anims.generateFrameNumbers("smallmon",{start: 18, end:24}),
@@ -99,21 +108,14 @@ export default class PreloadScene extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: "thrust",
-      frames: this.anims.generateFrameNumbers("player",{}),
-      frameRate: 20,
-      repeat: -1
-    });
-
-    this.anims.create({
       key: "beam_anim",
       frames: this.anims.generateFrameNumbers("beam",{}),
       frameRate: 20,
       repeat: -1
     });
 
-
     this.scene.start('MainScene');
+
   }
 
 }

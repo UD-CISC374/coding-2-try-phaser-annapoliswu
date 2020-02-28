@@ -6,8 +6,9 @@ export default class SmallMon extends Enemy {
     constructor(scene,x,y){
         super(scene, x, y);
         this.play("smallmon_walk");
-        this.body.setSize(18,40);
+        this.body.setSize(20,24);
         this.timer = 0;
+        this.setBounce(.5);
     }
 
     update(){
