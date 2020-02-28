@@ -10,6 +10,7 @@ https://github.com/ansimuz/getting-started-with-phaser/blob/master/spritesheets.
 BACKGROUND
 https://aethrall.itch.io/demon-woods-parallax-background
 
-SKELETON
+ENEMIES
 https://jesse-m.itch.io/skeleton-pack
+https://opengameart.org/content/cute-monster-sprite-sheet
 
