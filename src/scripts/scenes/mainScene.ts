@@ -54,6 +54,7 @@ export default class MainScene extends Phaser.Scene {
     this.cursorKeys = this.input.keyboard.createCursorKeys();
     this.enemyTimer = 0;
     this.powerUpTimer = 0;
+    gameSettings.score = 0;
 
     //background
     this.paraBg = this.add.tileSprite(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT, "paraBg");
