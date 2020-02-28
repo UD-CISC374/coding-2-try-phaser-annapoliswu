@@ -132,6 +132,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/coding-2-try-phaser-annapoliswu/devassets/spritesheets/smallMonster.png"
   },
   {
+    "revision": "842598d32c75a86870e145b469312919",
+    "url": "/coding-2-try-phaser-annapoliswu/devfavicon.ico"
+  },
+  {
     "revision": "99d9cd1bd72a67c1284b",
     "url": "/coding-2-try-phaser-annapoliswu/devgen.main.678259c32dab61be0914.bundle.js"
   },
