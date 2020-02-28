@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 
 // TODO: Replace your game name here
-const myGameName = 'Educational Phaser Game Template';
+const myGameName = 'Alone in the Woods';
 
 module.exports = {
   entry: ['./src/scripts/game.ts'],
